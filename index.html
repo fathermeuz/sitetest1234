@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consulting SN – Gestion des rendez-vous</title>
+<style>
+:root{--bg:#fff;--bg2:#f5f5f4;--card:#fff;--ink:#111;--mut:#666;--line:#e4e4e1;--or:#ff6a1a;--blk:#0a2e73;--ok:#16a34a;--err:#dc2626;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--bg2:#1a1a1a;--card:#1f1f1f;--ink:#f3f3f3;--mut:#a3a3a3;--line:#333;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121212;--bg2:#1a1a1a;--card:#1f1f1f;--ink:#f3f3f3;--mut:#a3a3a3;--line:#333;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+.hero{background:var(--blk);color:#fff;padding-bottom:64px;background-image:radial-gradient(600px 300px at 85% 20%,rgba(96,165,250,.35),transparent)}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.02em}.logo b{color:var(--or)}
+.btn{background:var(--or);color:#fff;border:0;border-radius:999px;padding:12px 22px;font:600 15px inherit;font-family:inherit;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{filter:brightness(1.08)}.btn.ghost{background:transparent;border:1px solid #444}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;margin-top:40px}
+h1{font-size:clamp(34px,6vw,58px);line-height:1.05;margin:0 0 16px;letter-spacing:-.03em}h1 span{color:var(--or)}
+.hero p{color:#cfe0ff;max-width:480px;margin:0 0 24px}
+.cc{background:linear-gradient(135deg,#ff6a1a,#c2410c);border-radius:20px;padding:24px;aspect-ratio:1.6;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 20px 50px rgba(255,106,26,.25);max-width:380px;margin-left:auto;width:100%}
+.cc small{opacity:.85}.cc .n{font-size:40px;font-weight:800}
+section{padding:56px 0}.alt{background:var(--bg2)}
+h2{font-size:28px;margin:0 0 6px;letter-spacing:-.02em}.sub{color:var(--mut);margin:0 0 28px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.stat b{display:block;font-size:34px;color:var(--or);line-height:1.1}.stat span{color:var(--mut);font-size:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px}
+.two{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start}
+label{display:block;font-size:13px;font-weight:600;margin:14px 0 6px}
+input,select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid var(--or);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.msg{min-height:22px;margin:12px 0 0;font-size:14px}.msg.e{color:var(--err)}.msg.o{color:var(--ok)}
+.days{display:flex;gap:10px;overflow-x:auto;padding-bottom:10px;margin-bottom:20px}
+.day{flex:0 0 92px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;font:inherit}
+.day.sel{border-color:var(--or);outline:2px solid var(--or)}
+.day small{display:block;color:var(--mut);text-transform:capitalize}.day b{display:block;font-size:20px}
+.day em{font-style:normal;font-size:12px;font-weight:700;color:var(--ok)}.day.low em{color:var(--or)}.day.full em{color:var(--err)}
+.bar{height:6px;background:var(--line);border-radius:9px;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--or)}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}.tools input{flex:1;min-width:180px}
+.list{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:480px}
+th{text-align:left;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;padding:8px;border-bottom:1px solid var(--line)}
+td{padding:12px 8px;border-bottom:1px solid var(--line)}
+.x{background:none;border:1px solid var(--line);color:var(--err);border-radius:8px;padding:6px 10px;cursor:pointer}
+.empty{color:var(--mut);text-align:center;padding:28px}
+footer{background:var(--blk);color:#b6c8ee;text-align:center;padding:24px;font-size:14px}
+@media(max-width:860px){.grid,.two{grid-template-columns:1fr}.cc{margin:0}.stats{grid-template-columns:1fr 1fr 1fr;gap:8px}.stat{padding:14px}.stat b{font-size:26px}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+<nav><div class="logo">Consulting<b> SN</b></div><a class="btn" href="#app">Prendre rendez-vous</a></nav>
+<div class="grid"><div>
+<h1>Gérez vos clients et vos <span>rendez-vous</span> simplement.</h1>
+<p>Enregistrez chaque client avec son nom, son téléphone et la date choisie. Voyez en un coup d’œil les places disponibles par jour.</p>
+<a class="btn" href="#app">Commencer</a></div>
+<div class="cc"><small>Consulting SN · Aujourd’hui</small><div><div class="n" id="heroN">0</div><small>rendez-vous planifiés</small></div><small>Places disponibles en temps réel</small></div></div>
+</div></header>
+
+<section id="app"><div class="wrap">
+<h2>Tableau de bord</h2><p class="sub">Capacité : <b id="capTxt">8</b> clients par jour.</p>
+<div class="stats"><div class="stat"><b id="sTot">0</b><span>Rendez-vous</span></div><div class="stat"><b id="sDay">0</b><span>Ce jour</span></div><div class="stat"><b id="sFree">0</b><span>Places libres</span></div></div>
+<div class="panel" style="margin-bottom:24px"><h3 style="margin:0 0 14px">Disponibilités par date</h3><div class="days" id="days"></div></div>
+<div class="two">
+<form class="panel" id="f" novalidate>
+<h3 style="margin:0">Nouveau rendez-vous</h3>
+<label for="nom">Nom du client</label><input id="nom" autocomplete="off" required>
+<label for="tel">Téléphone</label><input id="tel" type="tel" inputmode="tel" placeholder="77 123 45 67" required>
+<div class="row"><div><label for="date">Date</label><input id="date" type="date" required></div>
+<div><label for="heure">Heure</label><select id="heure"></select></div></div>
+<p class="msg" id="msg" role="status"></p>
+<button class="btn" style="width:100%">Enregistrer</button>
+</form>
+<div class="panel"><h3 style="margin:0 0 14px">Rendez-vous</h3>
+<div class="tools"><input id="q" placeholder="Rechercher un nom ou un numéro"><input id="fd" type="date" aria-label="Filtrer par date"></div>
+<div class="list"><table><thead><tr><th>Client</th><th>Téléphone</th><th>Date</th><th>Heure</th><th></th></tr></thead><tbody id="tb"></tbody></table></div></div>
+</div></div></section>
+<footer>© 2026 Consulting SN · Version de test</footer>
+
+<script>
+(function(){
+var CAP=8,KEY="csn_rdv",rdv=[],sel="";
+function load(){try{rdv=JSON.parse(localStorage.getItem(KEY)||"[]")||[]}catch(e){rdv=[]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(rdv))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function iso(d){var m=d.getMonth()+1,j=d.getDate();return d.getFullYear()+"-"+(m<10?"0":"")+m+"-"+(j<10?"0":"")+j}
+function cnt(d){return rdv.filter(function(r){return r.date===d}).length}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fr(d){return new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})}
+var today=iso(new Date());sel=today;
+$("capTxt").textContent=CAP;$("date").min=today;$("date").value=today;
+var h="";for(var i=8;i<=17;i++){h+="<option>"+(i<10?"0":"")+i+":00</option>"}$("heure").innerHTML=h;
+function renderDays(){var s="";for(var i=0;i<14;i++){var d=new Date();d.setDate(d.getDate()+i);var k=iso(d),c=cnt(k),l=CAP-c;
+s+='<button type="button" class="day'+(k===sel?' sel':'')+(l===0?' full':l<=2?' low':'')+'" data-d="'+k+'"><small>'+d.toLocaleDateString("fr-FR",{weekday:"short"})+'</small><b>'+d.getDate()+'</b><em>'+(l===0?"Complet":l+" libre"+(l>1?"s":""))+'</em><div class="bar"><i style="width:'+(c/CAP*100)+'%"></i></div></button>'}
+$("days").innerHTML=s}
+function renderStats(){var c=cnt(sel);$("sTot").textContent=rdv.length;$("sDay").textContent=c;$("sFree").textContent=Math.max(0,CAP-c);$("heroN").textContent=cnt(today)}
+function renderList(){var q=$("q").value.trim().toLowerCase(),fd=$("fd").value;
+var l=rdv.filter(function(r){return(!q||(r.nom+" "+r.tel).toLowerCase().indexOf(q)>-1)&&(!fd||r.date===fd)}).sort(function(a,b){return(a.date+a.heure).localeCompare(b.date+b.heure)});
+$("tb").innerHTML=l.length?l.map(function(r){return"<tr><td><b>"+esc(r.nom)+"</b></td><td>"+esc(r.tel)+"</td><td>"+fr(r.date)+"</td><td>"+r.heure+'</td><td><button class="x" data-id="'+r.id+'" aria-label="Supprimer">Supprimer</button></td></tr>'}).join(""):'<tr><td colspan="5" class="empty">Aucun rendez-vous pour le moment.</td></tr>'}
+function all(){renderDays();renderStats();renderList()}
+function say(t,c){var m=$("msg");m.textContent=t;m.className="msg "+c}
+$("days").addEventListener("click",function(e){var b=e.target.closest(".day");if(!b)return;sel=b.dataset.d;$("date").value=sel;all()});
+$("tb").addEventListener("click",function(e){var b=e.target.closest(".x");if(!b)return;if(!confirm("Supprimer ce rendez-vous ?"))return;rdv=rdv.filter(function(r){return String(r.id)!==b.dataset.id});save();all()});
+$("q").addEventListener("input",renderList);$("fd").addEventListener("input",renderList);
+$("date").addEventListener("change",function(){if($("date").value){sel=$("date").value;renderDays();renderStats()}});
+$("f").addEventListener("submit",function(e){e.preventDefault();
+var nom=$("nom").value.trim(),tel=$("tel").value.trim(),d=$("date").value,hr=$("heure").value;
+if(nom.length<2)return say("Veuillez saisir le nom du client.","e");
+if(tel.replace(/\D/g,"").length<8)return say("Numéro de téléphone invalide.","e");
+if(!d||d<today)return say("Choisissez une date valide.","e");
+if(cnt(d)>=CAP)return say("Cette date est complète. Choisissez un autre jour.","e");
+if(rdv.some(function(r){return r.date===d&&r.heure===hr}))return say("Ce créneau est déjà pris à "+hr+".","e");
+rdv.push({id:Date.now(),nom:nom,tel:tel,date:d,heure:hr});save();sel=d;
+$("nom").value="";$("tel").value="";say("Rendez-vous enregistré pour le "+fr(d)+" à "+hr+".","o");all()});
+load();all();
+})();
+</script>
+</body>
+</html>
