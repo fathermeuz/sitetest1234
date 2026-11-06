@@ -151,7 +151,7 @@ if(!/^\S+@\S+\.\S+$/.test(em))return asay("Adresse e-mail invalide.","e");
 if(pw.length<6)return asay("Mot de passe trop court (6 caractères minimum).","e");
 var r=signup?await sb.auth.signUp({email:em,password:pw}):await sb.auth.signInWithPassword({email:em,password:pw});
 if(r.error)return asay(signup?"Inscription impossible : "+r.error.message:"E-mail ou mot de passe incorrect.","e");
-if(signup&&!r.data.session){asay("Compte créé. Vérifiez votre boîte mail pour confirmer, puis connectez-vous.","o");$("tLog").click()}});
+if(signup&&!r.data.session){$("tLog").click();asay("Compte créé. Vérifiez votre boîte mail pour confirmer, puis connectez-vous.","o")}});
 $("out").onclick=function(){sb.auth.signOut()};
 $("days").addEventListener("click",function(e){var b=e.target.closest(".day");if(!b)return;sel=b.dataset.d;$("date").value=sel;all()});
 $("date").addEventListener("change",function(){if($("date").value){sel=$("date").value;all()}});
