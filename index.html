@@ -81,16 +81,20 @@ footer{background:var(--blk);color:#b6c8ee;text-align:center;padding:24px;font-s
 </div></div></section>
 <footer>© 2026 Consulting SN · Version de test</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 (function(){
-var CAP=8,KEY="csn_rdv",rdv=[],sel="";
-function load(){try{rdv=JSON.parse(localStorage.getItem(KEY)||"[]")||[]}catch(e){rdv=[]}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(rdv))}catch(e){}}
+var SUPABASE_URL="https://pnkxytopgrdgxwshudpd.supabase.co";
+var SUPABASE_KEY="sb_publishable_8BWi9tvPbcOOwnW43Pwn5Q_isKwWS1X";
+var CAP=8,rdv=[],sel="",sb=null;
+try{sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)}catch(e){}
 function $(i){return document.getElementById(i)}
 function iso(d){var m=d.getMonth()+1,j=d.getDate();return d.getFullYear()+"-"+(m<10?"0":"")+m+"-"+(j<10?"0":"")+j}
 function cnt(d){return rdv.filter(function(r){return r.date===d}).length}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function fr(d){return new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"short"})}
+function say(t,c){var m=$("msg");m.textContent=t;m.className="msg "+c}
+function ready(){if(!sb||SUPABASE_KEY.indexOf("COLLEZ")===0){say("Clé Supabase manquante dans le fichier.","e");return false}return true}
 var today=iso(new Date());sel=today;
 $("capTxt").textContent=CAP;$("date").min=today;$("date").value=today;
 var h="";for(var i=8;i<=17;i++){h+="<option>"+(i<10?"0":"")+i+":00</option>"}$("heure").innerHTML=h;
@@ -100,23 +104,28 @@ $("days").innerHTML=s}
 function renderStats(){var c=cnt(sel);$("sTot").textContent=rdv.length;$("sDay").textContent=c;$("sFree").textContent=Math.max(0,CAP-c);$("heroN").textContent=cnt(today)}
 function renderList(){var q=$("q").value.trim().toLowerCase(),fd=$("fd").value;
 var l=rdv.filter(function(r){return(!q||(r.nom+" "+r.tel).toLowerCase().indexOf(q)>-1)&&(!fd||r.date===fd)}).sort(function(a,b){return(a.date+a.heure).localeCompare(b.date+b.heure)});
-$("tb").innerHTML=l.length?l.map(function(r){return"<tr><td><b>"+esc(r.nom)+"</b></td><td>"+esc(r.tel)+"</td><td>"+fr(r.date)+"</td><td>"+r.heure+'</td><td><button class="x" data-id="'+r.id+'" aria-label="Supprimer">Supprimer</button></td></tr>'}).join(""):'<tr><td colspan="5" class="empty">Aucun rendez-vous pour le moment.</td></tr>'}
+$("tb").innerHTML=l.length?l.map(function(r){return"<tr><td><b>"+esc(r.nom)+"</b></td><td>"+esc(r.tel)+"</td><td>"+fr(r.date)+"</td><td>"+r.heure+'</td><td><button class="x" data-id="'+esc(r.id)+'" aria-label="Supprimer">Supprimer</button></td></tr>'}).join(""):'<tr><td colspan="5" class="empty">Aucun rendez-vous pour le moment.</td></tr>'}
 function all(){renderDays();renderStats();renderList()}
-function say(t,c){var m=$("msg");m.textContent=t;m.className="msg "+c}
+async function load(){if(!ready())return all();
+var r=await sb.from("rendez_vous").select("*").gte("date_rdv",today).order("date_rdv").order("heure_rdv");
+if(r.error){say("Erreur de chargement : "+r.error.message,"e");return all()}
+rdv=(r.data||[]).map(function(x){return{id:x.id,nom:x.nom_client,tel:x.telephone,date:x.date_rdv,heure:String(x.heure_rdv).slice(0,5)}});all()}
 $("days").addEventListener("click",function(e){var b=e.target.closest(".day");if(!b)return;sel=b.dataset.d;$("date").value=sel;all()});
-$("tb").addEventListener("click",function(e){var b=e.target.closest(".x");if(!b)return;if(!confirm("Supprimer ce rendez-vous ?"))return;rdv=rdv.filter(function(r){return String(r.id)!==b.dataset.id});save();all()});
+$("tb").addEventListener("click",async function(e){var b=e.target.closest(".x");if(!b||!ready())return;if(!confirm("Supprimer ce rendez-vous ?"))return;
+var r=await sb.from("rendez_vous").delete().eq("id",b.dataset.id);
+if(r.error)return say("Suppression impossible : "+r.error.message,"e");await load()});
 $("q").addEventListener("input",renderList);$("fd").addEventListener("input",renderList);
 $("date").addEventListener("change",function(){if($("date").value){sel=$("date").value;renderDays();renderStats()}});
-$("f").addEventListener("submit",function(e){e.preventDefault();
+$("f").addEventListener("submit",async function(e){e.preventDefault();if(!ready())return;
 var nom=$("nom").value.trim(),tel=$("tel").value.trim(),d=$("date").value,hr=$("heure").value;
 if(nom.length<2)return say("Veuillez saisir le nom du client.","e");
 if(tel.replace(/\D/g,"").length<8)return say("Numéro de téléphone invalide.","e");
 if(!d||d<today)return say("Choisissez une date valide.","e");
 if(cnt(d)>=CAP)return say("Cette date est complète. Choisissez un autre jour.","e");
-if(rdv.some(function(r){return r.date===d&&r.heure===hr}))return say("Ce créneau est déjà pris à "+hr+".","e");
-rdv.push({id:Date.now(),nom:nom,tel:tel,date:d,heure:hr});save();sel=d;
-$("nom").value="";$("tel").value="";say("Rendez-vous enregistré pour le "+fr(d)+" à "+hr+".","o");all()});
-load();all();
+var r=await sb.from("rendez_vous").insert({nom_client:nom,telephone:tel,date_rdv:d,heure_rdv:hr});
+if(r.error)return say(r.error.code==="23505"?"Ce créneau est déjà pris à "+hr+".":"Enregistrement impossible : "+r.error.message,"e");
+sel=d;$("nom").value="";$("tel").value="";say("Rendez-vous enregistré pour le "+fr(d)+" à "+hr+".","o");await load()});
+load();
 })();
 </script>
 </body>
